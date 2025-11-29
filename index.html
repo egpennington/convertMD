@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ConvertMD - Rich Text to Markdown</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              gray: {
+                850: '#1f2937',
+                900: '#111827',
+                950: '#030712',
+              }
+            },
+            typography: (theme) => ({
+              DEFAULT: {
+                css: {
+                  color: theme('colors.gray.300'),
+                  a: {
+                    color: theme('colors.blue.400'),
+                    '&:hover': {
+                      color: theme('colors.blue.300'),
+                    },
+                  },
+                  h1: { color: theme('colors.gray.100') },
+                  h2: { color: theme('colors.gray.100') },
+                  h3: { color: theme('colors.gray.100') },
+                  h4: { color: theme('colors.gray.100') },
+                  strong: { color: theme('colors.gray.100') },
+                  code: { color: theme('colors.pink.300') },
+                  blockquote: { color: theme('colors.gray.400'), borderLeftColor: theme('colors.gray.700') },
+                },
+              },
+            }),
+          },
+        },
+        plugins: [],
+      }
+    </script>
+    <!-- Mammoth.js for DOCX conversion -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <!-- Turndown.js for HTML to Markdown conversion -->
+    <script src="https://unpkg.com/turndown/dist/turndown.js"></script>
+    
+    <!-- Github Markdown CSS for Preview Styling approximation if needed, but we use Tailwind Prose principles manually in the component -->
+    <style>
+      /* Custom scrollbar for better aesthetics */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #1f2937; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #4b5563; 
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #6b7280; 
+      }
+      .markdown-body pre {
+        background-color: #1f2937;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        overflow-x: auto;
+      }
+      .markdown-body blockquote {
+        border-left: 4px solid #4b5563;
+        padding-left: 1rem;
+        font-style: italic;
+        color: #9ca3af;
+      }
+      .markdown-body ul {
+        list-style-type: disc;
+        padding-left: 1.5rem;
+      }
+      .markdown-body ol {
+        list-style-type: decimal;
+        padding-left: 1.5rem;
+      }
+      .markdown-body h1 { font-size: 2em; font-weight: bold; margin-bottom: 0.5em; margin-top: 1em; }
+      .markdown-body h2 { font-size: 1.5em; font-weight: bold; margin-bottom: 0.5em; margin-top: 1em; }
+      .markdown-body h3 { font-size: 1.25em; font-weight: bold; margin-bottom: 0.5em; margin-top: 1em; }
+      .markdown-body p { margin-bottom: 1em; line-height: 1.6; }
+      .markdown-body a { color: #60a5fa; text-decoration: underline; }
+      .markdown-body code { background-color: #374151; padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-family: monospace; }
+      .markdown-body hr { border-color: #374151; margin: 2rem 0; }
+      .markdown-body table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
+      .markdown-body th, .markdown-body td { border: 1px solid #374151; padding: 0.5rem; }
+      .markdown-body th { background-color: #1f2937; }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.555.0",
+    "react-markdown": "https://aistudiocdn.com/react-markdown@^10.1.0",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "remark-gfm": "https://aistudiocdn.com/remark-gfm@^4.0.1"
+  }
+}
+</script>
+</head>
+  <body class="bg-gray-950 text-gray-100 overflow-hidden">
+    <div id="root"></div>
+  </body>
+</html>
