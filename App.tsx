@@ -4,7 +4,7 @@ import { Toolbar } from './components/Toolbar';
 import { Editor } from './components/Editor';
 import { Preview } from './components/Preview';
 import { RichTextEditor } from './components/RichTextEditor';
-import { convertToMarkdown } from './services/geminiService';
+import { formatMarkdown } from './services/formatService';
 
 // Declare TurndownService on window for TypeScript
 declare global {
@@ -17,7 +17,7 @@ const DEFAULT_MARKDOWN = `# Welcome to ConvertMD
 
 Start typing on the left to see the **live preview** on the right.
 
-- Use the **Auto-Format** button to magically structure your text.
+- Use the **Auto-Format** button to clean up your markdown syntax locally.
 - **Switch Modes** to use the Rich Text visual editor.
 - **Import** text or DOCX files to edit them.
 
@@ -74,10 +74,10 @@ const App: React.FC = () => {
     
     setIsProcessing(true);
     try {
-      const formatted = await convertToMarkdown(contentToProcess);
+      const formatted = await formatMarkdown(contentToProcess);
       setMarkdownContent(formatted);
     } catch (error) {
-      alert("Failed to auto-format. Please check your API key.");
+      console.error("Formatting error", error);
     } finally {
       setIsProcessing(false);
     }

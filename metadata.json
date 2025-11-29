@@ -1,5 +1,5 @@
 {
-  "name": "Copy of MarkGenius",
-  "description": "A powerful text-to-markdown converter and editor featuring real-time preview, AI-powered auto-formatting using Gemini, and responsive split-view layouts.",
+  "name": "ConvertMD",
+  "description": "A powerful text-to-markdown converter and editor featuring real-time preview, offline auto-formatting, and responsive split-view layouts.",
   "requestFramePermissions": []
 }
