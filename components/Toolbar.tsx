@@ -31,7 +31,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   onUpload,
   onMagicConvert,
   onClear,
-  isProcessing
+  isProcessing,
+  onLoadReadmeTemplate,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -156,14 +157,36 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           onChange={handleFileChange}
         />
 
-        <Button variant="secondary" onClick={triggerFileUpload} title="Upload Text or DOCX">
+        <Button 
+          variant="secondary" 
+          onClick={triggerFileUpload} 
+          title="Upload Text or DOCX"
+        >
           <Upload className="mr-2 h-4 w-4" />
           <span className="hidden sm:inline">Import</span>
         </Button>
 
-        <Button variant="ghost" onClick={onClear} title="Clear Editor" className="text-red-400 hover:text-red-300 hover:bg-gray-800">
+        {mode === AppMode.MARKDOWN_EDITOR && (
+          <Button
+            variant="secondary"
+            onClick={onLoadReadmeTemplate}
+            title="Load README.md template"
+          >
+            <FileText className="mr-2 h-4 w-4" />
+            <span className="hidden sm:inline">README Template</span>
+            <span className="sm:hidden">README</span>
+          </Button>
+        )}
+
+        <Button 
+          variant="ghost" 
+          onClick={onClear} 
+          title="Clear Editor" 
+          className="text-red-400 hover:text-red-300 hover:bg-gray-800"
+        >
           <Trash2 className="h-4 w-4" />
         </Button>
+
 
         {/* Only show 'Auto-Format' in Markdown Editor mode. In Converter mode, it's real-time. */}
         {mode === AppMode.MARKDOWN_EDITOR && (

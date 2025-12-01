@@ -5,6 +5,8 @@ import { Editor } from './components/Editor';
 import { Preview } from './components/Preview';
 import { RichTextEditor } from './components/RichTextEditor';
 import { formatMarkdown } from './services/formatService';
+import { DEFAULT_README_TEMPLATE } from './readmeTemplate';
+
 
 // Declare TurndownService on window for TypeScript
 declare global {
@@ -39,6 +41,13 @@ const App: React.FC = () => {
   // Content state for Converter Mode (Rich Text Input)
   const [richTextContent, setRichTextContent] = useState<string>(DEFAULT_RICH_TEXT);
   const [generatedMarkdown, setGeneratedMarkdown] = useState<string>('');
+
+  const handleLoadReadmeTemplate = () => {
+  // Ensure we're in Markdown Editor mode
+    setMode(AppMode.MARKDOWN_EDITOR);
+    setMarkdownContent(DEFAULT_README_TEMPLATE);
+  };
+
   
   // Real-time Sync for Rich Text to Markdown
   useEffect(() => {
@@ -111,7 +120,7 @@ const App: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'document.md';
+    a.download = 'README.md';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -131,6 +140,7 @@ const App: React.FC = () => {
         onMagicConvert={handleMagicConvert}
         onClear={handleClear}
         isProcessing={isProcessing}
+        onLoadReadmeTemplate={handleLoadReadmeTemplate} 
       />
 
       <main className={`flex flex-1 overflow-hidden ${

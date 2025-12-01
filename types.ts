@@ -32,4 +32,5 @@ export interface ToolbarProps {
   onMagicConvert: () => void;
   onClear: () => void;
   isProcessing: boolean;
+  onLoadReadmeTemplate: () => void;
 }
