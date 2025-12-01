@@ -6,6 +6,7 @@ import { Preview } from './components/Preview';
 import { RichTextEditor } from './components/RichTextEditor';
 import { formatMarkdown } from './services/formatService';
 import { DEFAULT_README_TEMPLATE } from './readmeTemplate';
+import { APP_VERSION } from "./version";
 
 
 // Declare TurndownService on window for TypeScript
@@ -192,6 +193,12 @@ const App: React.FC = () => {
           )}
         </div>
       </main>
+      <footer className="flex items-center justify-center border-t border-gray-800 bg-gray-950 px-4 py-3 text-xs text-gray-400">
+        <p>
+          &copy; {new Date().getFullYear()} penningtonProgramming ·{" "}
+          <span className="text-gray-500">v{APP_VERSION}</span>
+        </p>
+      </footer>
     </div>
   );
 };
