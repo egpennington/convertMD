@@ -39,10 +39,10 @@ ConvertMD is a real-time Markdown editor and conversion tool designed to help de
 
 ---
 
-## 📸 Screenshots (Optional)
+## 📸 Screenshots
 
 ![ConvertMD Demo 1](demo/markup2text.gif)
-![ConvertMD Demo 2](demo/redmeTemplate.gif)
+![ConvertMD Demo 2](demo/readmeTemplate.gif)
 
 ---
 
