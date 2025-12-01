@@ -6,7 +6,7 @@ ConvertMD is a real-time Markdown editor and conversion tool designed to help de
 
 ## 🌐 Live Demo
 
-🔗 **Live Site:** https://converMD.netlify.app  
+🔗 **Live Site:** https://convertmd.netlify.app  
 (convertMD.netlify)
 
 ---
@@ -92,9 +92,9 @@ ConvertMD runs entirely in the browser and does **not require any external APIs 
 - **DOCX Parsing:** Handled client-side via **Mammoth.js**
 - **Data Privacy:** No files or content are uploaded to a server
 
--- No API keys required  
--- No authentication setup  
--- Works fully offline after load
+- No API keys required  
+- No authentication setup  
+- Works fully offline after load
 
 ---
 
