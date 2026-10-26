@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useEffect } from 'react';
 import { AppMode, LayoutMode } from './types';
 import { Toolbar } from './components/Toolbar';
@@ -5,9 +6,8 @@ import { Editor } from './components/Editor';
 import { Preview } from './components/Preview';
 import { RichTextEditor } from './components/RichTextEditor';
 import { formatMarkdown } from './services/formatService';
-import { DEFAULT_README_TEMPLATE } from './readmeTemplate';
-import { APP_VERSION } from "./version";
-
+import { DownloadModal, sanitizeFileName } from './components/DownloadModal';
+import { CheckCircle2 } from 'lucide-react';
 
 // Declare TurndownService on window for TypeScript
 declare global {
@@ -36,20 +36,25 @@ const App: React.FC = () => {
   const [layout, setLayout] = useState<LayoutMode>(LayoutMode.SIDE_BY_SIDE);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   
+  // Document file name (user-customizable)
+  const [fileName, setFileName] = useState<string>('document');
+  const [isDownloadModalOpen, setIsDownloadModalOpen] = useState<boolean>(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
   // Content state for Editor Mode (Markdown Input)
   const [markdownContent, setMarkdownContent] = useState<string>(DEFAULT_MARKDOWN);
   
   // Content state for Converter Mode (Rich Text Input)
   const [richTextContent, setRichTextContent] = useState<string>(DEFAULT_RICH_TEXT);
   const [generatedMarkdown, setGeneratedMarkdown] = useState<string>('');
-
-  const handleLoadReadmeTemplate = () => {
-  // Ensure we're in Markdown Editor mode
-    setMode(AppMode.MARKDOWN_EDITOR);
-    setMarkdownContent(DEFAULT_README_TEMPLATE);
-  };
-
   
+  const showToast = useCallback((message: string) => {
+    setToastMessage(message);
+    setTimeout(() => {
+      setToastMessage((prev) => (prev === message ? null : prev));
+    }, 2800);
+  }, []);
+
   // Real-time Sync for Rich Text to Markdown
   useEffect(() => {
     if (mode === AppMode.TEXT_CONVERTER) {
@@ -66,7 +71,14 @@ const App: React.FC = () => {
     }
   }, [richTextContent, mode]);
 
-  const setActiveContent = (newContent: string) => {
+  const setActiveContent = (newContent: string, uploadedFileName?: string) => {
+    if (uploadedFileName) {
+      const cleaned = sanitizeFileName(uploadedFileName);
+      if (cleaned) {
+        setFileName(cleaned);
+        showToast(`Imported ${cleaned}`);
+      }
+    }
     if (mode === AppMode.MARKDOWN_EDITOR) {
       setMarkdownContent(newContent);
     } else {
@@ -86,6 +98,7 @@ const App: React.FC = () => {
     try {
       const formatted = await formatMarkdown(contentToProcess);
       setMarkdownContent(formatted);
+      showToast("Auto-formatted markdown!");
     } catch (error) {
       console.error("Formatting error", error);
     } finally {
@@ -108,40 +121,92 @@ const App: React.FC = () => {
       : generatedMarkdown;
 
     navigator.clipboard.writeText(textToCopy).then(() => {
-      console.log('Copied to clipboard');
+      showToast('Copied to clipboard!');
+    }).catch(() => {
+      showToast('Failed to copy');
     });
-  }, [mode, markdownContent, generatedMarkdown]);
+  }, [mode, markdownContent, generatedMarkdown, showToast]);
 
-  const handleDownload = useCallback(() => {
-    const textToDownload = mode === AppMode.MARKDOWN_EDITOR 
+  const handleOpenDownloadModal = useCallback(() => {
+    setIsDownloadModalOpen(true);
+  }, []);
+
+  const handleConfirmDownload = useCallback((chosenName: string, format: 'md' | 'txt' | 'html') => {
+    const cleanName = sanitizeFileName(chosenName) || 'document';
+    setFileName(cleanName);
+
+    const rawMarkdown = mode === AppMode.MARKDOWN_EDITOR 
       ? markdownContent 
       : generatedMarkdown;
 
-    const blob = new Blob([textToDownload], { type: 'text/markdown' });
+    let contentToSave = rawMarkdown;
+    let mimeType = 'text/markdown;charset=utf-8';
+
+    if (format === 'txt') {
+      contentToSave = rawMarkdown;
+      mimeType = 'text/plain;charset=utf-8';
+    } else if (format === 'html') {
+      const htmlBody = mode === AppMode.TEXT_CONVERTER 
+        ? richTextContent 
+        : (document.querySelector('.markdown-body')?.innerHTML || `<pre>${rawMarkdown}</pre>`);
+
+      contentToSave = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${cleanName}</title>
+  <style>
+    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #1f2937; }
+    h1, h2, h3, h4 { color: #111827; }
+    code { background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 0.9em; }
+    pre { background: #1f2937; color: #f9fafb; padding: 16px; border-radius: 8px; overflow-x: auto; }
+    pre code { background: none; color: inherit; padding: 0; }
+    blockquote { border-left: 4px solid #3b82f6; margin: 0; padding-left: 16px; color: #4b5563; font-style: italic; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px 12px; text-align: left; }
+    th { background: #f9fafb; }
+  </style>
+</head>
+<body>
+${htmlBody}
+</body>
+</html>`;
+      mimeType = 'text/html;charset=utf-8';
+    }
+
+    const blob = new Blob([contentToSave], { type: mimeType });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'README.md';
+    a.download = `${cleanName}.${format}`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  }, [mode, markdownContent, generatedMarkdown]);
+
+    showToast(`Downloaded ${cleanName}.${format}`);
+  }, [mode, markdownContent, generatedMarkdown, richTextContent, showToast]);
+
+  const activeContent = mode === AppMode.MARKDOWN_EDITOR ? markdownContent : generatedMarkdown;
+  const wordCount = activeContent.trim() ? activeContent.trim().split(/\s+/).length : 0;
+  const contentLength = activeContent.length;
 
   return (
-    <div className="flex h-screen w-full flex-col overflow-hidden bg-gray-950 text-gray-100">
+    <div className="flex h-screen w-full flex-col overflow-hidden bg-gray-950 text-gray-100 relative">
       <Toolbar 
         layout={layout}
         mode={mode}
         onToggleLayout={setLayout}
         onToggleMode={setMode}
         onCopy={handleCopy}
-        onDownload={handleDownload}
+        onDownload={handleOpenDownloadModal}
         onUpload={setActiveContent}
         onMagicConvert={handleMagicConvert}
         onClear={handleClear}
         isProcessing={isProcessing}
-        onLoadReadmeTemplate={handleLoadReadmeTemplate} 
+        fileName={fileName}
+        onFileNameChange={setFileName}
       />
 
       <main className={`flex flex-1 overflow-hidden ${
@@ -193,20 +258,24 @@ const App: React.FC = () => {
           )}
         </div>
       </main>
-      <footer className="flex items-center justify-center border-t border-gray-800 bg-gray-950 px-4 py-3 text-xs text-gray-400">
-        <p>
-  &copy; {new Date().getFullYear()}{" "}
-  <a
-    href="https://emmettpennington.com/"
-    target="_blank"
-    rel="noopener noreferrer"
-    className="hover:text-blue-500 transition-colors"
-  >
-    Pennington Labs
-  </a>{" "}
-  · <span className="text-gray-500">v{APP_VERSION}</span>
-</p>
-      </footer>
+
+      {/* Download Modal with Custom Filename */}
+      <DownloadModal
+        isOpen={isDownloadModalOpen}
+        onClose={() => setIsDownloadModalOpen(false)}
+        initialFileName={fileName}
+        onDownload={handleConfirmDownload}
+        contentLength={contentLength}
+        wordCount={wordCount}
+      />
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-lg bg-gray-800 border border-gray-700 px-4 py-2.5 text-xs sm:text-sm font-medium text-white shadow-xl">
+          <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
     </div>
   );
 };

@@ -28,9 +28,10 @@ export interface ToolbarProps {
   onToggleMode: (mode: AppMode) => void;
   onCopy: () => void;
   onDownload: () => void;
-  onUpload: (content: string) => void;
+  onUpload: (content: string, originalFileName?: string) => void;
   onMagicConvert: () => void;
   onClear: () => void;
   isProcessing: boolean;
-  onLoadReadmeTemplate: () => void;
+  fileName: string;
+  onFileNameChange: (name: string) => void;
 }

@@ -32,7 +32,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   onMagicConvert,
   onClear,
   isProcessing,
-  onLoadReadmeTemplate,
+  fileName,
+  onFileNameChange
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -40,9 +41,11 @@ export const Toolbar: React.FC<ToolbarProps> = ({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const fileName = file.name.toLowerCase();
+    const lowerName = file.name.toLowerCase();
+    const dotIndex = file.name.lastIndexOf('.');
+    const baseName = dotIndex > 0 ? file.name.substring(0, dotIndex) : file.name;
 
-    if (fileName.endsWith('.docx')) {
+    if (lowerName.endsWith('.docx')) {
       const reader = new FileReader();
       reader.onload = (event) => {
         const arrayBuffer = event.target?.result as ArrayBuffer;
@@ -54,7 +57,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 
           conversionPromise
             .then((result: any) => {
-              onUpload(result.value);
+              onUpload(result.value, baseName);
             })
             .catch((err: any) => {
               console.error("Docx parsing error", err);
@@ -71,7 +74,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
       reader.onload = (event) => {
         const text = event.target?.result;
         if (typeof text === 'string') {
-          onUpload(text);
+          onUpload(text, baseName);
         }
       };
       reader.readAsText(file);
@@ -90,13 +93,29 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   return (
     <header className="flex flex-col gap-4 border-b border-gray-800 bg-gray-900 p-4 sm:flex-row sm:items-center sm:justify-between">
       
-      {/* Top Row / Left Side: Title and Mode Switcher */}
-      <div className="flex flex-wrap items-center gap-4">
+      {/* Top Row / Left Side: Title, Document Name, and Mode Switcher */}
+      <div className="flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 shadow-sm">
             <FileText className="h-5 w-5 text-white" />
           </div>
           <h1 className="text-xl font-bold text-white hidden md:block">ConvertMD</h1>
+        </div>
+
+        {/* Editable Document Name */}
+        <div 
+          className="flex items-center gap-1.5 rounded-lg bg-gray-800/90 border border-gray-700/80 px-2.5 py-1 text-xs focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-all"
+          title="Document filename - click to rename"
+        >
+          <input
+            type="text"
+            value={fileName}
+            onChange={(e) => onFileNameChange(e.target.value)}
+            placeholder="document"
+            aria-label="Document name"
+            className="w-24 sm:w-32 md:w-40 bg-transparent text-gray-200 placeholder-gray-500 font-medium focus:outline-none text-xs sm:text-sm"
+          />
+          <span className="text-[11px] font-mono text-gray-400 select-none font-semibold">.md</span>
         </div>
 
         {/* Mode Switcher */}
@@ -157,36 +176,14 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           onChange={handleFileChange}
         />
 
-        <Button 
-          variant="secondary" 
-          onClick={triggerFileUpload} 
-          title="Upload Text or DOCX"
-        >
+        <Button variant="secondary" onClick={triggerFileUpload} title="Upload Text or DOCX">
           <Upload className="mr-2 h-4 w-4" />
           <span className="hidden sm:inline">Import</span>
         </Button>
 
-        {mode === AppMode.MARKDOWN_EDITOR && (
-          <Button
-            variant="secondary"
-            onClick={onLoadReadmeTemplate}
-            title="Load README.md template"
-          >
-            <FileText className="mr-2 h-4 w-4" />
-            <span className="hidden sm:inline">README Template</span>
-            <span className="sm:hidden">README</span>
-          </Button>
-        )}
-
-        <Button 
-          variant="ghost" 
-          onClick={onClear} 
-          title="Clear Editor" 
-          className="text-red-400 hover:text-red-300 hover:bg-gray-800"
-        >
+        <Button variant="ghost" onClick={onClear} title="Clear Editor" className="text-red-400 hover:text-red-300 hover:bg-gray-800">
           <Trash2 className="h-4 w-4" />
         </Button>
-
 
         {/* Only show 'Auto-Format' in Markdown Editor mode. In Converter mode, it's real-time. */}
         {mode === AppMode.MARKDOWN_EDITOR && (
@@ -202,12 +199,18 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           </Button>
         )}
 
-        <div className="flex items-center gap-1 border-l border-gray-700 pl-2 ml-2">
-          <Button variant="ghost" onClick={onCopy} title="Copy Output">
+        <div className="flex items-center gap-1.5 border-l border-gray-700 pl-2 ml-2">
+          <Button variant="ghost" onClick={onCopy} title="Copy Output to Clipboard">
             <Copy className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" onClick={onDownload} title="Download .md">
-            <ArrowDownToLine className="h-4 w-4" />
+          <Button 
+            variant="secondary" 
+            onClick={onDownload} 
+            title={`Download as ${fileName.trim() || 'document'}.md`}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border-blue-500/30 bg-blue-950/40 hover:bg-blue-900/50 text-blue-300 hover:text-white"
+          >
+            <ArrowDownToLine className="h-4 w-4 text-blue-400" />
+            <span className="hidden sm:inline">Download</span>
           </Button>
         </div>
       </div>
