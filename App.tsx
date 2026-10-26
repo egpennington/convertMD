@@ -195,9 +195,17 @@ const App: React.FC = () => {
       </main>
       <footer className="flex items-center justify-center border-t border-gray-800 bg-gray-950 px-4 py-3 text-xs text-gray-400">
         <p>
-          &copy; {new Date().getFullYear()} penningtonProgramming ·{" "}
-          <span className="text-gray-500">v{APP_VERSION}</span>
-        </p>
+  &copy; {new Date().getFullYear()}{" "}
+  <a
+    href="https://emmettpennington.com/"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="hover:text-blue-500 transition-colors"
+  >
+    Pennington Labs
+  </a>{" "}
+  · <span className="text-gray-500">v{APP_VERSION}</span>
+</p>
       </footer>
     </div>
   );
